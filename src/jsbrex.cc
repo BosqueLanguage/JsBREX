@@ -431,6 +431,81 @@ Napi::Value EndsWith(const Napi::CallbackInfo& info)
     return Napi::Boolean::From<bool>(env, accepts);
 }
 
+std::string checkInfoArgs(const Napi::CallbackInfo& info)
+{
+    if (info.Length() != 2) {
+        return "Expected regex + current namespace";
+    }
+
+    if (!info[0].IsString() || !info[1].IsString()) {
+        return "Expected all arguments as strings";
+    }
+
+    return "";
+}
+
+Napi::Value GetBSQIRForm(const Napi::CallbackInfo& info) 
+{
+    Napi::Env env = info.Env();
+
+    std::string aok = checkInfoArgs(info);
+    if(aok != "") {
+        Napi::TypeError::New(env, aok).ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::string uregex = info[0].As<Napi::String>().Utf8Value();
+    std::u8string regex(uregex.cbegin(), uregex.cend());
+
+    auto inns = info[1].As<Napi::String>().Utf8Value();
+    std::string rrok = processRegexAsNeeded(inns, regex);
+    if(rrok != "") {
+        Napi::Error::New(env, rrok).ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::string rebsqir;
+    if(!isUnicodeRegex(regex)) {
+        rebsqir = g_executableCRegexMap[regex]->getBSQIRInfo().first;        
+    }
+    else {
+        rebsqir = g_executableUnicodeRegexMap[regex]->getBSQIRInfo().first;
+    }
+    
+    return Napi::String::From<std::string>(env, rebsqir);
+}
+
+Napi::Value GetSMTForm(const Napi::CallbackInfo& info) 
+{
+     Napi::Env env = info.Env();
+
+    std::string aok = checkInfoArgs(info);
+    if(aok != "") {
+        Napi::TypeError::New(env, aok).ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::string uregex = info[0].As<Napi::String>().Utf8Value();
+    std::u8string regex(uregex.cbegin(), uregex.cend());
+
+    auto inns = info[1].As<Napi::String>().Utf8Value();
+    std::string rrok = processRegexAsNeeded(inns, regex);
+    if(rrok != "") {
+        Napi::Error::New(env, rrok).ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    std::string rebsqir;
+    if(!isUnicodeRegex(regex)) {
+        rebsqir = g_executableCRegexMap[regex]->getBSQIRInfo().second;        
+    }
+    else {
+        rebsqir = g_executableUnicodeRegexMap[regex]->getBSQIRInfo().second;
+    }
+    
+    return Napi::String::From<std::string>(env, rebsqir);
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) 
@@ -446,6 +521,9 @@ Napi::Object Init(Napi::Env env, Napi::Object exports)
 
     exports.Set(Napi::String::New(env, "escapeStringLiteral"), Napi::Function::New(env, EscapeStringLiteral));
     exports.Set(Napi::String::New(env, "escapeCStringLiteral"), Napi::Function::New(env, EscapeCStringLiteral));
+
+    exports.Set(Napi::String::New(env, "getBSQIRForm"), Napi::Function::New(env, GetBSQIRForm));
+    exports.Set(Napi::String::New(env, "getSMTForm"), Napi::Function::New(env, GetSMTForm));
 
     return exports;
 }

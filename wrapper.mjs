@@ -79,3 +79,23 @@ export function endsWith(pattern, input, inns) {
     return brex.endsWith(pattern, input, inns);
 }
 
+/**
+ * @param {string} pattern
+ * @param {string} inns 
+ * @returns {string}
+ * @throws {TypeError}
+ */
+export function getBSQIRForm(pattern, inns) {
+    return brex.getBSQIRForm(pattern, inns);
+}
+
+/**
+ * @param {string} pattern
+ * @param {string} inns 
+ * @returns {string}
+ * @throws {TypeError}
+ */
+export function getSMTForm(pattern, inns) {
+    return brex.getSMTForm(pattern, inns);
+}
+

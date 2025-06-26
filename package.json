@@ -1,7 +1,7 @@
 {
   "name": "@bosque/jsbrex",
   "description": "Node API bindings to expose BREX in JavaScript",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "type": "commonjs",
   "main": "./lib/index.js",
   "exports": {
